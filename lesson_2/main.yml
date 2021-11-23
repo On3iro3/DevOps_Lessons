@@ -1,0 +1,46 @@
+---
+- hosts: all
+  become: yes
+  become_method: sudo
+  gather_facts: no
+
+  tasks:
+
+    - name: Update apt cache and packages
+      apt:
+        update_cache: yes
+        upgrade: dist
+        force_apt_get: true
+
+    - name: Install Python and necessary components
+      apt:
+        name:
+          - python
+          - python-pip
+          - python3-pip
+          - python-virtualenv
+        state: latest
+        update_cache: false
+
+    - name: Install Flask
+      pip:
+        name: flask
+
+    - name: Create directory
+      file:
+        path: /home/admin/hello
+        state: directory
+        mode: '0755'
+
+    - name: Copy python code
+      copy:
+        src: hello.py
+        dest: /home/admin/hello/hello.py
+        owner: root
+        group: root
+        mode: a+x
+
+    - name: Run python Flask
+      shell: >
+        export FLASK_APP=/home/admin/hello/hello.py;
+        nohup flask run --host=0.0.0.0 </dev/null >/dev/null 2>&1 &
